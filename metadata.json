@@ -1,0 +1,8 @@
+{
+  "name": "Gaurav Furniture Pro",
+  "description": "Professional furniture 3D design, cutting list calculation, sheet optimization, material estimation, PDF quotation and backup management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
