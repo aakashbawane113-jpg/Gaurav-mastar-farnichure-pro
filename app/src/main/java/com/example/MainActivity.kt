@@ -159,6 +159,9 @@ fun SmartFurnitureApp(
                     CuttingListScreen(
                         cuttingParts = activeCuttingParts,
                         language = language,
+                        project = activeProject,
+                        config = activeConfig,
+                        optimizationResult = optimizationResult,
                         onAddPart = { viewModel.addCuttingPart(it) },
                         onUpdatePart = { viewModel.updateCuttingPart(it) },
                         onDeletePart = { viewModel.deleteCuttingPart(it) },
@@ -204,6 +207,7 @@ fun SmartFurnitureApp(
                         cuttingParts = activeCuttingParts,
                         estimation = activeEstimation,
                         language = language,
+                        optimizationResult = optimizationResult,
                         onNavigateToEstimation = { viewModel.navigateTo(Screen.EstimationView) },
                         onBack = { viewModel.navigateBack() }
                     )

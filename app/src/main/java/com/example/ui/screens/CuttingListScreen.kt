@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -52,15 +54,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import com.example.model.CuttingPart
+import com.example.model.FurnitureConfig
+import com.example.model.FurnitureProject
+import com.example.model.OptimizationResult
 import com.example.util.AppLanguage
 import com.example.util.Localization
+import com.example.util.PdfReportGenerator
+import com.example.util.ShareHelper
 import com.example.viewmodel.Screen
+import java.io.File
 import java.util.Locale
 
 @Composable
@@ -72,15 +82,30 @@ fun CuttingListScreen(
     onDeletePart: (String) -> Unit,
     onNavigateToOptimizer: () -> Unit,
     onBack: () -> Unit,
+    project: FurnitureProject? = null,
+    config: FurnitureConfig? = null,
+    optimizationResult: OptimizationResult? = null,
     modifier: Modifier = Modifier
 ) {
     BackHandler { onBack() }
 
+    val context = LocalContext.current
     var showAddDialog by remember { mutableStateOf(false) }
     var partToEdit by remember { mutableStateOf<CuttingPart?>(null) }
+    var showPdfDialog by remember { mutableStateOf(false) }
+    var generatedPdfFile by remember { mutableStateOf<File?>(null) }
+
+    val prj = project ?: FurnitureProject(customerName = "Valued Customer", projectName = "Cutting List")
+    val cfg = config ?: FurnitureConfig()
 
     val totalPanels = cuttingParts.sumOf { it.quantity }
     val totalAreaSqFt = cuttingParts.sumOf { it.totalAreaSqFt }
+
+    fun preparePdf(): File {
+        val file = PdfReportGenerator.generateCuttingListPdf(context, prj, cfg, cuttingParts, optimizationResult)
+        generatedPdfFile = file
+        return file
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -95,33 +120,54 @@ fun CuttingListScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = Localization.get("cutting_list", language),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Total Panels: $totalPanels pcs  •  ${String.format(Locale.US, "%.1f", totalAreaSqFt)} sq.ft",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
-                            )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = Localization.get("cutting_list", language),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Total Panels: $totalPanels pcs  •  ${String.format(Locale.US, "%.1f", totalAreaSqFt)} sq.ft",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f)
+                                )
+                            }
                         }
 
-                        Button(
-                            onClick = onNavigateToOptimizer,
-                            modifier = Modifier.testTag("optimize_sheets_cta")
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(Icons.Default.GridView, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(Localization.get("sheet_optimizer", language), fontSize = 12.sp)
+                            OutlinedButton(
+                                onClick = {
+                                    preparePdf()
+                                    showPdfDialog = true
+                                },
+                                modifier = Modifier.weight(1f).testTag("export_cutting_pdf_btn")
+                            ) {
+                                Icon(Icons.Default.PictureAsPdf, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(Localization.get("export_cutting_pdf", language), fontSize = 12.sp)
+                            }
+
+                            Button(
+                                onClick = onNavigateToOptimizer,
+                                modifier = Modifier.weight(1f).testTag("optimize_sheets_cta")
+                            ) {
+                                Icon(Icons.Default.GridView, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(Localization.get("sheet_optimizer", language), fontSize = 12.sp)
+                            }
                         }
                     }
                 }
@@ -194,6 +240,48 @@ fun CuttingListScreen(
                 }
                 showAddDialog = false
                 partToEdit = null
+            }
+        )
+    }
+
+    if (showPdfDialog && generatedPdfFile != null) {
+        val pdf = generatedPdfFile!!
+        AlertDialog(
+            onDismissRequest = { showPdfDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(Localization.get("cutting_list_pdf", language))
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Workshop Cutting List PDF is ready for ${prj.projectName}.")
+                    Text("Total $totalPanels panels specified.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        ShareHelper.shareCuttingListViaWhatsApp(context, pdf, prj, totalPanels)
+                        showPdfDialog = false
+                    }
+                ) {
+                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("WhatsApp")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        ShareHelper.viewOrPrintPdf(context, pdf)
+                        showPdfDialog = false
+                    }
+                ) {
+                    Text("View / Print")
+                }
             }
         )
     }

@@ -91,6 +91,9 @@ object Localization {
 
         // Actions
         "generate_pdf" to Pair("Download Quotation PDF", "कोटेशन PDF डाउनलोड करें"),
+        "quotation_pdf" to Pair("Customer Quotation PDF", "ग्राहक कोटेशन PDF"),
+        "cutting_list_pdf" to Pair("Workshop Cutting List PDF", "वर्कशॉप कटिंग लिस्ट PDF"),
+        "export_cutting_pdf" to Pair("Export Cutting PDF", "कटिंग PDF निकालें"),
         "share_whatsapp" to Pair("Share on WhatsApp", "WhatsApp पर भेजें"),
         "save_project" to Pair("Save Project", "प्रोजेक्ट सेव करें"),
         "duplicate_project" to Pair("Duplicate", "डुप्लिकेट कॉपी बनाएं"),

@@ -70,6 +70,41 @@ object ShareHelper {
         }
     }
 
+    fun shareCuttingListViaWhatsApp(
+        context: Context,
+        pdfFile: File,
+        project: FurnitureProject,
+        partsCount: Int
+    ) {
+        try {
+            val authority = "${context.packageName}.fileprovider"
+            val uri: Uri = FileProvider.getUriForFile(context, authority, pdfFile)
+
+            val message = """
+                *GAURAV FURNITURE PRO*
+                *Workshop Cutting List & Sheet Nesting*
+                -----------------------------------
+                📋 Project: ${project.projectName}
+                👤 Client: ${project.customerName}
+                🔢 Total Panels: $partsCount items
+                
+                📄 Please find the attached official Cutting List & Material Specification PDF for workshop fabrication.
+            """.trimIndent()
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/pdf"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TEXT, message)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            val chooser = Intent.createChooser(intent, "Share Workshop Cutting List PDF")
+            context.startActivity(chooser)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error sharing cutting list: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     fun viewOrPrintPdf(context: Context, pdfFile: File) {
         try {
             val authority = "${context.packageName}.fileprovider"

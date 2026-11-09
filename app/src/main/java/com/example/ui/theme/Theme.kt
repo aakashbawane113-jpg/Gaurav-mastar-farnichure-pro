@@ -13,30 +13,30 @@ import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryDark,
-    onPrimary = Color(0xFF00363D),
+    onPrimary = Color(0xFF002244),
     primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = Color(0xFFBCE9FF),
-    secondary = SecondaryTeal,
+    onPrimaryContainer = Color(0xFFDBEAFE),
+    secondary = SecondaryBlue,
     onSecondary = Color.White,
-    tertiary = TertiaryAmber,
+    tertiary = TertiaryAccent,
     background = BackgroundDark,
     surface = SurfaceDark,
     surfaceVariant = Color(0xFF1E293B)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryWood,
-    onPrimary = OnPrimaryWood,
-    primaryContainer = PrimaryContainerWood,
-    onPrimaryContainer = OnPrimaryContainerWood,
-    secondary = SecondaryTeal,
-    onSecondary = OnSecondaryTeal,
-    secondaryContainer = SecondaryContainerTeal,
-    onSecondaryContainer = OnSecondaryContainerTeal,
-    tertiary = TertiaryAmber,
-    onTertiary = OnTertiaryAmber,
-    tertiaryContainer = TertiaryContainerAmber,
-    onTertiaryContainer = OnTertiaryContainerAmber,
+    primary = PrimaryBlue,
+    onPrimary = OnPrimaryBlue,
+    primaryContainer = PrimaryContainerBlue,
+    onPrimaryContainer = OnPrimaryContainerBlue,
+    secondary = SecondaryBlue,
+    onSecondary = OnSecondaryBlue,
+    secondaryContainer = SecondaryContainerBlue,
+    onSecondaryContainer = OnSecondaryContainerBlue,
+    tertiary = TertiaryAccent,
+    onTertiary = OnTertiaryAccent,
+    tertiaryContainer = TertiaryContainerAccent,
+    onTertiaryContainer = OnTertiaryContainerAccent,
     background = BackgroundLight,
     surface = SurfaceLight,
     surfaceVariant = SurfaceVariantLight,
@@ -47,7 +47,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Use our handcrafted rich theme by default
+    dynamicColor: Boolean = false, // Use our handcrafted beautiful blue and white theme
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
